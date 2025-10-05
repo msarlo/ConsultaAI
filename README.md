@@ -13,4 +13,3 @@
   3. Pull Requests sempre para `Dev`.
   4. Revisão obrigatória antes do merge.
   5. Nunca faça push direto para `main` ou `Dev`.
-  6. Futuro processo
