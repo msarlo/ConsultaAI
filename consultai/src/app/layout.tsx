@@ -1,21 +1,14 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ChatWidget } from "@/app/components/chat";
+import { Header } from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ConversationProvider } from "@/contexts/ConversationContext";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
-  title: "ConsultaAI - Assistente Inteligente",
-  description: "Seu assistente de IA para consultas e atendimento",
+  title: "ConsultAI - Assistente Virtual Inteligente",
+  description: "Assistente virtual para consultas e atendimento automatizado da Prefeitura de Juiz de Fora",
 };
 
 export default function RootLayout({
@@ -25,11 +18,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
-        <ChatWidget />
+      <body suppressHydrationWarning className="h-screen w-full m-0 p-0 flex flex-col bg-white overflow-hidden">
+        <AuthProvider>
+          <ConversationProvider>
+            <Header />
+            <div className="flex-1 flex flex-col min-h-0">
+              {children}
+            </div>
+            <Footer />
+          </ConversationProvider>
+        </AuthProvider>
       </body>
     </html>
   );

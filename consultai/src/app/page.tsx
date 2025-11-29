@@ -1,30 +1,11 @@
-'use client';
+import ChatBot from '@/components/ChatBot';
 
-import React, { useState } from 'react';
-import Sidebar from '@/app/components/Sidebar';
-import Chat from '@/app/components/Chat';
-
-export default function Home() {
-  const [selectedQuestion, setSelectedQuestion] = useState<string | undefined>();
-
-  const handlePerguntaClick = (pergunta: string) => {
-    setSelectedQuestion(pergunta);
-    // Resetar após um pequeno delay para permitir que o Chat processe
-    setTimeout(() => setSelectedQuestion(undefined), 100);
-  };
-
+export default function HomePage() {
   return (
-    <div className="h-screen w-screen bg-black p-0 flex flex-col">
-      {/* Layout Principal: Sidebar + Chat */}
-      <div className="flex-1 grid grid-cols-[460px_1fr] overflow-hidden">
-        {/* Sidebar */}
-        <Sidebar onPerguntaClick={handlePerguntaClick} />
-
-        {/* Área do Chat */}
-        <div className="flex flex-col h-full">
-          <Chat initialMessage={selectedQuestion} />
-        </div>
+    <main className="flex-1 w-full bg-gradient-to-br from-blue-50 via-white to-blue-50 flex items-stretch p-0 min-h-0">
+      <div className="w-full h-full flex flex-col overflow-hidden bg-white">
+        <ChatBot />
       </div>
-    </div>
+    </main>
   );
 }
