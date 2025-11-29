@@ -1,21 +1,34 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, Share2 } from 'lucide-react';
+import { MessageSquare, Newspaper, Activity, ExternalLink } from 'lucide-react';
 
 const perguntas = [
-  "Como funciona o sistema X?",
-  "Gerar relatório de atendimentos",
+  "Como funciona o sistema de saúde?",
+  "Onde encontrar UPAs em JF?",
   "Quais são os horários das unidades?",
   "Quero falar com um atendente"
 ];
 
-interface NewsItem {
-  API: string;
-  Description: string;
-  Link: string;
+interface NoticiaSaude {
+  title: string;
+  description: string;
+  url: string;
+  image?: string;
+  publishedAt: string;
+  source: {
+    name: string;
+    url: string;
+  };
+}
+
+interface IndicadorSaude {
+  nome: string;
+  valor: string;
+  descricao: string;
+  fonte: string;
+  link?: string;
 }
 
 interface SidebarProps {
@@ -23,23 +36,48 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ onPerguntaClick }: SidebarProps) {
-  const [noticias, setNoticias] = useState<NewsItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [noticias, setNoticias] = useState<NoticiaSaude[]>([]);
+  const [indicadores, setIndicadores] = useState<IndicadorSaude[]>([]);
+  const [loadingNoticias, setLoadingNoticias] = useState(true);
+  const [loadingIndicadores, setLoadingIndicadores] = useState(true);
 
   useEffect(() => {
-    fetch('/api/public-apis')
+    // Buscar notícias de saúde
+    fetch('/api/noticias-saude')
       .then((res) => res.json())
       .then((data) => {
-        if (data.entries) {
-          setNoticias(data.entries.slice(0, 15));
+        if (data.articles) {
+          setNoticias(data.articles.slice(0, 5));
         }
-        setLoading(false);
+        setLoadingNoticias(false);
       })
       .catch((err) => {
         console.error('Erro ao buscar notícias:', err);
-        setLoading(false);
+        setLoadingNoticias(false);
+      });
+
+    // Buscar indicadores de saúde
+    fetch('/api/dados-saude?regiao=mg')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.indicadores) {
+          setIndicadores(data.indicadores.slice(0, 4));
+        }
+        setLoadingIndicadores(false);
+      })
+      .catch((err) => {
+        console.error('Erro ao buscar indicadores:', err);
+        setLoadingIndicadores(false);
       });
   }, []);
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: 'short',
+    });
+  };
 
   return (
     <aside className="w-full h-full bg-[#0a0a0a] border-r border-gray-800 flex flex-col overflow-hidden">
@@ -51,7 +89,7 @@ export default function Sidebar({ onPerguntaClick }: SidebarProps) {
           </div>
           <div>
             <h1 className="text-lg font-semibold text-white">ConsultaAI</h1>
-            <p className="text-xs text-gray-400">Assistente de IA</p>
+            <p className="text-xs text-gray-400">Saúde MG</p>
           </div>
         </div>
       </div>
@@ -78,38 +116,61 @@ export default function Sidebar({ onPerguntaClick }: SidebarProps) {
           </div>
         </div>
 
-        {/* APIs Públicas */}
+        {/* Indicadores de Saúde */}
         <div className="px-4 pb-4">
           <div className="flex items-center gap-2 mb-3">
-            <Share2 className="w-4 h-4 text-cyan-400" />
-            <h2 className="text-sm font-semibold text-white">APIs Públicas</h2>
+            <Activity className="w-4 h-4 text-cyan-400" />
+            <h2 className="text-sm font-semibold text-white">Indicadores MG</h2>
           </div>
-          {loading ? (
+          {loadingIndicadores ? (
             <p className="text-sm text-gray-500">Carregando...</p>
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              {indicadores.map((item, index) => (
+                <div
+                  key={index}
+                  className="bg-gray-900 rounded-lg p-3 border border-gray-800"
+                >
+                  <p className="text-lg font-bold text-cyan-400">{item.valor}</p>
+                  <p className="text-xs text-gray-400 line-clamp-1">{item.nome}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Notícias de Saúde */}
+        <div className="px-4 pb-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Newspaper className="w-4 h-4 text-cyan-400" />
+            <h2 className="text-sm font-semibold text-white">Notícias de Saúde</h2>
+          </div>
+          {loadingNoticias ? (
+            <p className="text-sm text-gray-500">Carregando notícias...</p>
           ) : (
             <div className="flex flex-col gap-3">
               {noticias.map((item, index) => (
-                <div
+                <a
                   key={index}
-                  className="border-b border-gray-800 pb-3 last:border-0"
+                  href={item.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block bg-gray-900 rounded-lg p-3 border border-gray-800 hover:border-gray-700 transition-colors group"
                 >
-                  <h4 className="font-medium text-sm text-gray-200 mb-1">
-                    {item.API}
-                  </h4>
-                  <p className="text-xs text-gray-400 mb-2 line-clamp-2">
-                    {item.Description}
+                  <div className="flex items-start justify-between gap-2">
+                    <h4 className="font-medium text-sm text-gray-200 group-hover:text-cyan-400 transition-colors line-clamp-2">
+                      {item.title}
+                    </h4>
+                    <ExternalLink className="w-3 h-3 text-gray-500 flex-shrink-0 mt-1" />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                    {item.description}
                   </p>
-                  {item.Link && (
-                    <a
-                      href={item.Link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-cyan-400 hover:text-cyan-300 hover:underline"
-                    >
-                      Ver mais →
-                    </a>
-                  )}
-                </div>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-xs text-gray-600">{item.source?.name}</span>
+                    <span className="text-xs text-gray-600">{formatDate(item.publishedAt)}</span>
+                  </div>
+                </a>
               ))}
             </div>
           )}
