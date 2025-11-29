@@ -16,7 +16,7 @@ export default function Home() {
   return (
     <div className="h-screen w-screen bg-black p-0 flex flex-col">
       {/* Layout Principal: Sidebar + Chat */}
-      <div className="flex-1 grid grid-cols-[280px_1fr] overflow-hidden">
+      <div className="flex-1 grid grid-cols-[460px_1fr] overflow-hidden">
         {/* Sidebar */}
         <Sidebar onPerguntaClick={handlePerguntaClick} />
 
