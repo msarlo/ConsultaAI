@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
+import { MessageSquare, Share2 } from 'lucide-react';
 
 const perguntas = [
   "Como funciona o sistema X?",
@@ -27,11 +27,11 @@ export default function Sidebar({ onPerguntaClick }: SidebarProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('https://api.publicapis.org/entries')
+    fetch('/api/public-apis')
       .then((res) => res.json())
       .then((data) => {
         if (data.entries) {
-          setNoticias(data.entries.slice(0, 5));
+          setNoticias(data.entries.slice(0, 15));
         }
         setLoading(false);
       })
@@ -42,71 +42,86 @@ export default function Sidebar({ onPerguntaClick }: SidebarProps) {
   }, []);
 
   return (
-    <aside className="w-full h-full bg-gray-50 border-r border-gray-200 flex flex-col gap-4 p-4">
-      {/* Perguntas Pré-definidas */}
-      <Card className="shadow-sm">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-semibold text-gray-700">
-            Perguntas Frequentes
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+    <aside className="w-full h-full bg-[#0a0a0a] border-r border-gray-800 flex flex-col overflow-hidden">
+      {/* Header do Sidebar */}
+      <div className="p-6 border-b border-gray-800 flex-shrink-0">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-cyan-600 rounded-lg flex items-center justify-center">
+            <MessageSquare className="w-6 h-6 text-black" />
+          </div>
+          <div>
+            <h1 className="text-lg font-semibold text-white">ConsultaAI</h1>
+            <p className="text-xs text-gray-400">Assistente de IA</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden">
+        {/* Perguntas Frequentes */}
+        <div className="px-4 py-4">
+          <div className="flex items-center gap-2 mb-3">
+            <MessageSquare className="w-4 h-4 text-cyan-400" />
+            <h2 className="text-sm font-semibold text-white">Perguntas Frequentes</h2>
+          </div>
           <div className="flex flex-col gap-2">
             {perguntas.map((pergunta, index) => (
               <Button
                 key={index}
-                variant="outline"
-                className="justify-start text-left h-auto py-3 px-4 hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                variant="ghost"
+                className="justify-start text-left h-auto py-3 px-3 bg-gray-900 hover:bg-gray-800 border-0 text-gray-300 hover:text-white transition-colors rounded-lg"
                 onClick={() => onPerguntaClick?.(pergunta)}
               >
-                <span className="text-sm text-gray-700">{pergunta}</span>
+                <span className="text-sm">{pergunta}</span>
               </Button>
             ))}
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Notícias da API */}
-      <Card className="shadow-sm flex-1 flex flex-col overflow-hidden">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-semibold text-gray-700">
-            APIs Públicas
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex-1 overflow-hidden p-0">
-          <ScrollArea className="h-full px-6 pb-4">
-            {loading ? (
-              <p className="text-sm text-gray-500">Carregando...</p>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {noticias.map((item, index) => (
-                  <div
-                    key={index}
-                    className="border-b border-gray-200 pb-3 last:border-0"
-                  >
-                    <h4 className="font-medium text-sm text-gray-800 mb-1">
-                      {item.API}
-                    </h4>
-                    <p className="text-xs text-gray-600 mb-2">
-                      {item.Description}
-                    </p>
-                    {item.Link && (
-                      <a
-                        href={item.Link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-blue-600 hover:underline"
-                      >
-                        Ver mais →
-                      </a>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </ScrollArea>
-        </CardContent>
-      </Card>
+        {/* APIs Públicas */}
+        <div className="px-4 pb-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Share2 className="w-4 h-4 text-cyan-400" />
+            <h2 className="text-sm font-semibold text-white">APIs Públicas</h2>
+          </div>
+          {loading ? (
+            <p className="text-sm text-gray-500">Carregando...</p>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {noticias.map((item, index) => (
+                <div
+                  key={index}
+                  className="border-b border-gray-800 pb-3 last:border-0"
+                >
+                  <h4 className="font-medium text-sm text-gray-200 mb-1">
+                    {item.API}
+                  </h4>
+                  <p className="text-xs text-gray-400 mb-2 line-clamp-2">
+                    {item.Description}
+                  </p>
+                  {item.Link && (
+                    <a
+                      href={item.Link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-cyan-400 hover:text-cyan-300 hover:underline"
+                    >
+                      Ver mais →
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Botão Nova Conversa */}
+      <div className="p-4 border-t border-gray-800 flex-shrink-0">
+        <Button className="w-full bg-cyan-500 hover:bg-cyan-600 text-black font-semibold">
+          Nova Conversa
+        </Button>
+      </div>
     </aside>
   );
 }
