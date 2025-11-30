@@ -89,35 +89,38 @@ export function ConversationProvider({ children }: { children: React.ReactNode }
   };
 
   const addMessage = (message: Omit<Message, 'id' | 'timestamp'>) => {
-    if (!currentConversation) {
-      console.log('Nenhuma conversa atual para adicionar mensagem');
-      return;
-    }
+    setCurrentConversation(prev => {
+      if (!prev) {
+        console.log('Nenhuma conversa atual para adicionar mensagem');
+        return prev;
+      }
 
-    const newMessage: Message = {
-      ...message,
-      id: crypto.randomUUID(),
-      timestamp: new Date(),
-    };
+      const newMessage: Message = {
+        ...message,
+        id: crypto.randomUUID(),
+        timestamp: new Date(),
+      };
 
-    console.log('Adicionando mensagem:', newMessage);
-    console.log('Conversa atual antes:', currentConversation);
+      console.log('Adicionando mensagem:', newMessage);
 
-    const updatedConversation = {
-      ...currentConversation,
-      messages: [...currentConversation.messages, newMessage],
-      updatedAt: new Date(),
-      title: currentConversation.messages.length === 1 
-        ? message.text.slice(0, 30) + (message.text.length > 30 ? '...' : '')
-        : currentConversation.title
-    };
+      const updatedConversation = {
+        ...prev,
+        messages: [...prev.messages, newMessage],
+        updatedAt: new Date(),
+        title: prev.messages.length === 1 
+          ? message.text.slice(0, 30) + (message.text.length > 30 ? '...' : '')
+          : prev.title
+      };
 
-    console.log('Conversa atualizada:', updatedConversation);
+      console.log('Conversa atualizada:', updatedConversation);
 
-    setCurrentConversation(updatedConversation);
-    setConversations(prev =>
-      prev.map(c => c.id === updatedConversation.id ? updatedConversation : c)
-    );
+      // Atualiza também o array de conversas
+      setConversations(prevConvs =>
+        prevConvs.map(c => c.id === updatedConversation.id ? updatedConversation : c)
+      );
+
+      return updatedConversation;
+    });
   };
 
   const clearCurrentConversation = () => {

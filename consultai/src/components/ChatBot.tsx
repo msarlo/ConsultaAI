@@ -15,7 +15,7 @@ export default function ChatBot() {
   const [isLoading, setIsLoading] = React.useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const quickActions = ["Serviços disponíveis", "Horário de atendimento", "Documentos"];
+  const quickActions = ["Onde encontrar UPAs em JF?", "Horário de atendimento", "Quero falar com um atendente"];
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -41,11 +41,11 @@ export default function ChatBot() {
     const messageText = input.trim();
     console.log('Enviando mensagem:', messageText);
     
-    // Adiciona a mensagem do usuário PRIMEIRO
-    addMessage({ text: messageText, sender: 'user' });
-    
-    // Depois limpa o input
+    // Limpa o input ANTES de adicionar a mensagem
     setInput('');
+    
+    // Adiciona a mensagem do usuário
+    addMessage({ text: messageText, sender: 'user' });
     
     setIsTyping(true);
     setIsLoading(true);
@@ -62,8 +62,26 @@ export default function ChatBot() {
   }, [input, isTyping, isLoading, currentConversation, addMessage]);
 
   const handleQuickAction = React.useCallback((action: string) => {
-    setInput(action);
-  }, []);
+    if (isTyping || isLoading || !currentConversation) {
+      return;
+    }
+
+    // Adiciona a mensagem do usuário diretamente
+    addMessage({ text: action, sender: 'user' });
+    
+    setIsTyping(true);
+    setIsLoading(true);
+
+    // Simulação de resposta do bot
+    setTimeout(() => {
+      addMessage({
+        text: 'Obrigado! Sua mensagem foi recebida. Em breve teremos integração com IA real.',
+        sender: 'bot'
+      });
+      setIsTyping(false);
+      setIsLoading(false);
+    }, 1200);
+  }, [isTyping, isLoading, currentConversation, addMessage]);
 
   return (
     <div className="flex h-full">
