@@ -32,56 +32,69 @@ export default function ChatBot() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const sendMessage = React.useCallback(() => {
-    if (input.trim() === '' || isTyping || isLoading || !currentConversation) {
-      console.log('Mensagem bloqueada:', { input, isTyping, isLoading, hasConversation: !!currentConversation });
+  const processUserMessage = React.useCallback(async (messageText: string) => {
+    if (messageText.trim() === '' || isTyping || isLoading || !currentConversation) {
       return;
     }
 
-    const messageText = input.trim();
-    console.log('Enviando mensagem:', messageText);
-    
-    // Limpa o input ANTES de adicionar a mensagem
-    setInput('');
-    
-    // Adiciona a mensagem do usuário
+    // Adiciona a mensagem do usuário à UI
     addMessage({ text: messageText, sender: 'user' });
     
-    setIsTyping(true);
-    setIsLoading(true);
-
-    // Simulação de resposta do bot
-    setTimeout(() => {
-      addMessage({
-        text: 'Obrigado! Sua mensagem foi recebida. Em breve teremos integração com IA real.',
-        sender: 'bot'
-      });
-      setIsTyping(false);
-      setIsLoading(false);
-    }, 1200);
-  }, [input, isTyping, isLoading, currentConversation, addMessage]);
-
-  const handleQuickAction = React.useCallback((action: string) => {
-    if (isTyping || isLoading || !currentConversation) {
-      return;
+    // Limpa o input se a mensagem veio do campo de texto
+    if (input === messageText) {
+      setInput('');
     }
 
-    // Adiciona a mensagem do usuário diretamente
-    addMessage({ text: action, sender: 'user' });
-    
     setIsTyping(true);
     setIsLoading(true);
 
-    // Simulação de resposta do bot
-    setTimeout(() => {
-      addMessage({
-        text: 'Obrigado! Sua mensagem foi recebida. Em breve teremos integração com IA real.',
-        sender: 'bot'
+    try {
+      // É crucial criar uma nova lista de mensagens para enviar,
+      // incluindo a que acabamos de adicionar, pois o estado pode não ter atualizado ainda.
+      const messagesForApi = [
+        ...currentConversation.messages,
+        { text: messageText, sender: 'user', id: 'temp', timestamp: new Date() },
+      ];
+
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ messages: messagesForApi }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Falha na comunicação com o servidor');
+      }
+
+      const data = await response.json();
+
+      // Adiciona a resposta do bot
+      addMessage({
+        text: data.text,
+        sender: 'bot',
+      });
+    } catch (error) {
+      console.error("Erro ao enviar mensagem:", error);
+      addMessage({
+        text: 'Desculpe, ocorreu um erro ao conectar com a IA. Por favor, tente novamente.',
+        sender: 'bot',
+      });
+    } finally {
       setIsTyping(false);
       setIsLoading(false);
-    }, 1200);
-  }, [isTyping, isLoading, currentConversation, addMessage]);
+    }
+  }, [addMessage, currentConversation, input, isLoading, isTyping]);
+  
+  const sendMessage = React.useCallback(() => {
+    processUserMessage(input);
+  }, [input, processUserMessage]);
+
+  const handleQuickAction = React.useCallback((action: string) => {
+    processUserMessage(action);
+  }, [processUserMessage]);
 
   return (
     <div className="flex h-full">
