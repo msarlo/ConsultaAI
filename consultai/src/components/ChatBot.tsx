@@ -32,56 +32,50 @@ export default function ChatBot() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const sendMessage = React.useCallback(() => {
-    if (input.trim() === '' || isTyping || isLoading || !currentConversation) {
-      console.log('Mensagem bloqueada:', { input, isTyping, isLoading, hasConversation: !!currentConversation });
+  const processUserMessage = React.useCallback(async (messageText: string) => {
+    if (messageText.trim() === '' || isTyping || isLoading || !currentConversation) {
       return;
     }
-
-    const messageText = input.trim();
-    console.log('Enviando mensagem:', messageText);
     
-    // Limpa o input ANTES de adicionar a mensagem
-    setInput('');
-    
-    // Adiciona a mensagem do usuário
     addMessage({ text: messageText, sender: 'user' });
-    
     setIsTyping(true);
     setIsLoading(true);
 
-    // Simulação de resposta do bot
-    setTimeout(() => {
-      addMessage({
-        text: 'Obrigado! Sua mensagem foi recebida. Em breve teremos integração com IA real.',
-        sender: 'bot'
+    try {
+      const response = await fetch('http://localhost:5001/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: messageText }),
       });
+
+      if (!response.ok) {
+        throw new Error('Falha na comunicação com o servidor.');
+      }
+
+      const data = await response.json();
+      addMessage({ text: data.response, sender: 'bot' });
+
+    } catch (error) {
+      console.error("Erro ao enviar mensagem:", error);
+      const errorMessage = error instanceof Error ? error.message : 'Não foi possível obter uma resposta.';
+      addMessage({ text: `Erro: ${errorMessage}`, sender: 'bot' });
+    } finally {
       setIsTyping(false);
       setIsLoading(false);
-    }, 1200);
-  }, [input, isTyping, isLoading, currentConversation, addMessage]);
+    }
+  }, [addMessage, currentConversation, isLoading, isTyping]);
+
+  const sendMessage = React.useCallback(() => {
+    if (input.trim() === '') return;
+    processUserMessage(input.trim());
+    setInput('');
+  }, [input, processUserMessage]);
 
   const handleQuickAction = React.useCallback((action: string) => {
-    if (isTyping || isLoading || !currentConversation) {
-      return;
-    }
-
-    // Adiciona a mensagem do usuário diretamente
-    addMessage({ text: action, sender: 'user' });
-    
-    setIsTyping(true);
-    setIsLoading(true);
-
-    // Simulação de resposta do bot
-    setTimeout(() => {
-      addMessage({
-        text: 'Obrigado! Sua mensagem foi recebida. Em breve teremos integração com IA real.',
-        sender: 'bot'
-      });
-      setIsTyping(false);
-      setIsLoading(false);
-    }, 1200);
-  }, [isTyping, isLoading, currentConversation, addMessage]);
+    processUserMessage(action);
+  }, [processUserMessage]);
 
   return (
     <div className="flex h-full">
