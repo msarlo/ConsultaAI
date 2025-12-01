@@ -7,7 +7,7 @@ export default function Footer() {
     <footer className="py-6 px-4 sm:px-6 lg:px-8" style={{backgroundColor: '#1e5ba8'}} aria-label="Rodapé principal">
       <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center">
         <div className="text-sm mb-6 sm:mb-0 text-center sm:text-left" aria-label="Informações da Prefeitura">
-          <h1 className="font-semibold text-blue-300 ">Prefeitura de Juiz de Fora</h1>
+          <h2 className="font-semibold text-white ">Prefeitura de Juiz de Fora</h2>
           <p className="text-gray-200">Av. Brasil, 2001 | Centro - Juiz de Fora/MG - CEP: 36060-010</p>
           <p className="text-gray-200 mt-1">
             © {new Date().getFullYear()} Todos os direitos reservados.
