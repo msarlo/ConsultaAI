@@ -76,8 +76,10 @@ export default function Sidebar() {
           ) : (
             <div className="space-y-1">
               {conversations.map((conversation) => (
-                <button
+                <div
                   key={conversation.id}
+                  role="button"
+                  tabIndex={0}
                   className={`
                     group relative p-3 rounded-lg cursor-pointer transition-colors text-left w-full
                     ${currentConversation?.id === conversation.id
@@ -88,6 +90,13 @@ export default function Sidebar() {
                   onClick={() => {
                     selectConversation(conversation.id);
                     setIsOpen(false);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      selectConversation(conversation.id);
+                      setIsOpen(false);
+                    }
                   }}
                 >
                   <div className="flex items-start justify-between gap-2">
@@ -117,7 +126,7 @@ export default function Sidebar() {
                       </svg>
                     </button>
                   </div>
-                </button>
+                </div>
               ))}
             </div>
           )}
