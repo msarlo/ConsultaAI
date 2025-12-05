@@ -27,7 +27,10 @@ export default function ChatMessage({ message }: ChatMessageProps) {
             ? 'bg-white border border-gray-200 text-gray-800'
             : 'bg-gradient-to-r from-blue-600 to-blue-700 text-white'
         }`}>
-          <p className="text-base leading-relaxed">{message.text}</p>
+          <p className="text-base leading-relaxed">
+            <span className="sr-only">{message.sender === 'bot' ? 'ConsultAI' : 'Você'} disse: </span>
+            {message.text}
+          </p>
         </div>
         <span className="text-xs text-gray-400 mt-1 px-2">
           {message.timestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}

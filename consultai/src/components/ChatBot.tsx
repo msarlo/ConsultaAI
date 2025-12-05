@@ -32,56 +32,50 @@ export default function ChatBot() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const sendMessage = React.useCallback(() => {
-    if (input.trim() === '' || isTyping || isLoading || !currentConversation) {
-      console.log('Mensagem bloqueada:', { input, isTyping, isLoading, hasConversation: !!currentConversation });
+  const processUserMessage = React.useCallback(async (messageText: string) => {
+    if (messageText.trim() === '' || isTyping || isLoading || !currentConversation) {
       return;
     }
-
-    const messageText = input.trim();
-    console.log('Enviando mensagem:', messageText);
     
-    // Limpa o input ANTES de adicionar a mensagem
-    setInput('');
-    
-    // Adiciona a mensagem do usuário
     addMessage({ text: messageText, sender: 'user' });
-    
     setIsTyping(true);
     setIsLoading(true);
 
-    // Simulação de resposta do bot
-    setTimeout(() => {
-      addMessage({
-        text: 'Obrigado! Sua mensagem foi recebida. Em breve teremos integração com IA real.',
-        sender: 'bot'
+    try {
+      const response = await fetch('http://localhost:5001/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: messageText }),
       });
+
+      if (!response.ok) {
+        throw new Error('Falha na comunicação com o servidor.');
+      }
+
+      const data = await response.json();
+      addMessage({ text: data.response, sender: 'bot' });
+
+    } catch (error) {
+      console.error("Erro ao enviar mensagem:", error);
+      const errorMessage = error instanceof Error ? error.message : 'Não foi possível obter uma resposta.';
+      addMessage({ text: `Erro: ${errorMessage}`, sender: 'bot' });
+    } finally {
       setIsTyping(false);
       setIsLoading(false);
-    }, 1200);
-  }, [input, isTyping, isLoading, currentConversation, addMessage]);
+    }
+  }, [addMessage, currentConversation, isLoading, isTyping]);
+
+  const sendMessage = React.useCallback(() => {
+    if (input.trim() === '') return;
+    processUserMessage(input.trim());
+    setInput('');
+  }, [input, processUserMessage]);
 
   const handleQuickAction = React.useCallback((action: string) => {
-    if (isTyping || isLoading || !currentConversation) {
-      return;
-    }
-
-    // Adiciona a mensagem do usuário diretamente
-    addMessage({ text: action, sender: 'user' });
-    
-    setIsTyping(true);
-    setIsLoading(true);
-
-    // Simulação de resposta do bot
-    setTimeout(() => {
-      addMessage({
-        text: 'Obrigado! Sua mensagem foi recebida. Em breve teremos integração com IA real.',
-        sender: 'bot'
-      });
-      setIsTyping(false);
-      setIsLoading(false);
-    }, 1200);
-  }, [isTyping, isLoading, currentConversation, addMessage]);
+    processUserMessage(action);
+  }, [processUserMessage]);
 
   return (
     <div className="flex h-full">
@@ -90,7 +84,11 @@ export default function ChatBot() {
         <div className="w-full h-full flex flex-col overflow-hidden bg-white">
           {currentConversation ? (
             <>
-              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 bg-transparent min-h-0">
+              <div 
+                className="flex-1 overflow-y-auto px-4 py-4 space-y-4 bg-transparent min-h-0"
+                aria-live="polite"
+                aria-busy={isLoading}
+              >
                 {currentConversation.messages.map((message, index) => {
                   const prevMessage = index > 0 ? currentConversation.messages[index - 1] : null;
                   const msgDate = message.timestamp.toLocaleDateString('pt-BR');
@@ -135,7 +133,7 @@ export default function ChatBot() {
             <div className="flex items-center justify-center h-full p-8">
               <div className="text-center max-w-md">
                 <div className="mb-6">
-                  <svg className="w-24 h-24 mx-auto text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-24 h-24 mx-auto text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                   </svg>
                 </div>
@@ -149,7 +147,7 @@ export default function ChatBot() {
                   onClick={createConversation}
                   className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 mx-auto font-medium shadow-md"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
                   Iniciar Nova Conversa

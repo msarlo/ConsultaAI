@@ -7,7 +7,12 @@ interface QuickActionsProps {
 export default function QuickActions({ actions, onAction, disabled = false }: QuickActionsProps) {
   return (
     <div className="px-4 py-2 bg-transparent border-t border-transparent">
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+      <div 
+        className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide"
+        tabIndex={0}
+        aria-label="Ações rápidas"
+        aria-orientation="horizontal"
+      >
         {actions.map((action, index) => (
           <button
             key={index}

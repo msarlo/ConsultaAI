@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -19,6 +20,12 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body suppressHydrationWarning className="h-screen w-full m-0 p-0 flex flex-col bg-white overflow-hidden">
+        <div vw="true" className="enabled">
+          <div vw-access-button="true" className="active"></div>
+          <div vw-plugin-wrapper="true">
+            <div className="vw-plugin-top-wrapper"></div>
+          </div>
+        </div>
         <AuthProvider>
           <ConversationProvider>
             <Header />
@@ -28,6 +35,10 @@ export default function RootLayout({
             <Footer />
           </ConversationProvider>
         </AuthProvider>
+        <Script src="https://vlibras.gov.br/app/vlibras-plugin.js" strategy="beforeInteractive" />
+        <Script id="vlibras-init" strategy="afterInteractive">
+          {`new window.VLibras.Widget('https://vlibras.gov.br/app');`}
+        </Script>
       </body>
     </html>
   );
