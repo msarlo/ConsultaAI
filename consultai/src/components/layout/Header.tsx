@@ -2,7 +2,6 @@
 import React, { ReactNode } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { LinkButton } from '@/components/layout/LinkButton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 
@@ -60,12 +59,7 @@ export function Header({ children }: Props) {
                 Sair
               </button>
             </div>
-          ) : (
-            <div className='hidden md:flex w-46 justify-between gap-2'>
-              <LinkButton href="/cadastro" label="Cadastro" />
-              <LinkButton href="/login" label="Login" />
-            </div>
-          )}
+          ) : null}
         </nav>
       </div>
     </header>
