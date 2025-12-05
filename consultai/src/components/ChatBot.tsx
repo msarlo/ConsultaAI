@@ -77,6 +77,27 @@ export default function ChatBot() {
     processUserMessage(action);
   }, [processUserMessage]);
 
+  const downloadConversation = React.useCallback(() => {
+    if (!currentConversation || currentConversation.messages.length === 0) return;
+
+    const now = new Date();
+    const header = `ConsultAI - Conversa exportada em ${now.toLocaleDateString('pt-BR')} às ${now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}\n\n`;
+
+    const content = currentConversation.messages.map(msg => {
+      const time = msg.timestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      const sender = msg.sender === 'user' ? 'Você' : 'ConsultAI';
+      return `[${time}] ${sender}:\n${msg.text}\n`;
+    }).join('\n---\n\n');
+
+    const blob = new Blob([header + content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `consultai-conversa-${now.toISOString().split('T')[0]}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [currentConversation]);
+
   return (
     <div className="flex h-full">
       <Sidebar />
@@ -84,7 +105,20 @@ export default function ChatBot() {
         <div className="w-full h-full flex flex-col overflow-hidden bg-white">
           {currentConversation ? (
             <>
-              <div 
+              <div className="flex justify-end px-4 py-2 border-b border-gray-100">
+                <button
+                  onClick={downloadConversation}
+                  disabled={currentConversation.messages.length <= 1}
+                  className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  aria-label="Baixar conversa como arquivo de texto"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  Baixar Conversa
+                </button>
+              </div>
+              <div
                 className="flex-1 overflow-y-auto px-4 py-4 space-y-4 bg-transparent min-h-0"
                 aria-live="polite"
                 aria-busy={isLoading}
