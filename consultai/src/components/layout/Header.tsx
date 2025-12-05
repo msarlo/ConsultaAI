@@ -19,7 +19,7 @@ export function Header({ children }: Props) {
   };
 
   return (
-    <header className="w-full py-7 px-4 sm:px-6 lg:px-8 shadow-md" style={{backgroundColor: '#1e5ba8'}} aria-label="Cabeçalho principal">
+    <header className="w-full py-2 px-4 sm:px-6 lg:px-8 shadow-md" style={{backgroundColor: '#1e5ba8'}} aria-label="Cabeçalho principal">
       <div className="container mx-auto px-4 flex justify-between items-center">
         <Link href="/" className="flex flex-col md:flex-row items-center gap-1 md:gap-4" aria-label="Ir para página inicial">
           <div className="w-40 md:w-auto">

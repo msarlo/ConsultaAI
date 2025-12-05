@@ -4,7 +4,7 @@ import { FaFacebookF, FaTwitter, FaYoutube, FaInstagram } from 'react-icons/fa';
 
 export default function Footer() {
   return (
-    <footer className="py-6 px-4 sm:px-6 lg:px-8" style={{backgroundColor: '#1e5ba8'}} aria-label="Rodapé principal">
+    <footer className="py-2 px-4 sm:px-6 lg:px-8" style={{backgroundColor: '#1e5ba8'}} aria-label="Rodapé principal">
       <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center">
         <div className="text-sm mb-6 sm:mb-0 text-center sm:text-left" aria-label="Informações da Prefeitura">
           <h2 className="font-semibold text-white ">Prefeitura de Juiz de Fora</h2>
