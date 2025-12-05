@@ -1,11 +1,11 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from guardrails import validate_prompt, validate_response, get_system_prompt
+#from guardrails import validate_prompt, validate_response, get_system_prompt
 import threading
 import traceback
 
 app = Flask(__name__)
-CORS(app, resources={r"/chat": {"origins": "http://localhost:3000"}})
+CORS(app)
 
 # Lazy-load do pipeline para evitar falha na importação ao iniciar o Flask
 _text_generator = None
