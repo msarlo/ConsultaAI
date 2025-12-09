@@ -35,7 +35,8 @@ def is_topic_allowed(prompt: str) -> bool:
 # ATENÇÃO: Esta é uma lista de exemplo e extremamente simplificada.
 # Em um ambiente de produção, use um serviço de moderação de conteúdo ou uma lista mais robusta.
 FORBIDDEN_WORDS = [
-    "palavrão1", "palavrão2", "ofensa1", "ofensa2" # Substituir por uma lista real
+    "porra", "merda", "caralho", "bosta", "foda-se", "puta", "viado", "cuzão",
+    "idiota", "burro", "imbecil", "retardado", "gordo", "feio", "nojento",                              "racista", "sexista", "homofóbico", "xenófobo", "terrorista", "cacete"
 ]
 
 def contains_forbidden_words(text: str) -> bool:

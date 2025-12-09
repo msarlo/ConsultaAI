@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-#from guardrails import validate_prompt, validate_response, get_system_prompt
+from guardrails import validate_prompt, validate_response, get_system_prompt
 import threading
 import traceback
 
