@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+import Groq from 'groq-sdk';
 
 const SYSTEM_PROMPT = `Você é o ConsultAI, um assistente virtual especializado em saúde pública de Juiz de Fora (MG) e Minas Gerais.
 
@@ -18,29 +17,12 @@ Diretrizes:
 - Responda sempre em português brasileiro
 - Seja conciso, mas completo nas respostas`;
 
-interface GeminiContent {
-  parts: { text: string }[];
-  role: string;
-}
-
-interface GeminiResponse {
-  candidates?: {
-    content: {
-      parts: { text: string }[];
-    };
-  }[];
-  error?: {
-    message: string;
-    code: number;
-  };
-}
-
 export async function POST(request: Request) {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY;
 
   if (!apiKey) {
     return NextResponse.json(
-      { error: 'GEMINI_API_KEY não configurada' },
+      { error: 'GROQ_API_KEY não configurada' },
       { status: 500 }
     );
   }
@@ -55,58 +37,19 @@ export async function POST(request: Request) {
       );
     }
 
-    const contents: GeminiContent[] = [
-      {
-        role: 'user',
-        parts: [{ text: `${SYSTEM_PROMPT}\n\nUsuário: ${message}` }]
-      }
-    ];
+    const groq = new Groq({ apiKey });
 
-    const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents,
-        generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 1024,
-        },
-        safetySettings: [
-          {
-            category: 'HARM_CATEGORY_HARASSMENT',
-            threshold: 'BLOCK_MEDIUM_AND_ABOVE'
-          },
-          {
-            category: 'HARM_CATEGORY_HATE_SPEECH',
-            threshold: 'BLOCK_MEDIUM_AND_ABOVE'
-          },
-          {
-            category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-            threshold: 'BLOCK_MEDIUM_AND_ABOVE'
-          },
-          {
-            category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-            threshold: 'BLOCK_MEDIUM_AND_ABOVE'
-          }
-        ]
-      }),
+    const completion = await groq.chat.completions.create({
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: message }
+      ],
+      model: 'llama-3.3-70b-versatile',
+      temperature: 0.7,
+      max_tokens: 1024,
     });
 
-    const data: GeminiResponse = await response.json();
-
-    if (data.error) {
-      console.error('Gemini API error:', data.error);
-      return NextResponse.json(
-        { error: `Erro da API: ${data.error.message}` },
-        { status: response.status }
-      );
-    }
-
-    const botResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    const botResponse = completion.choices[0]?.message?.content;
 
     if (!botResponse) {
       return NextResponse.json(
